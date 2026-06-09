@@ -1,4 +1,3 @@
-import streamlit as pd
 import streamlit as st
 from google import genai
 from google.genai import types
@@ -11,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 커스텀 CSS로 앱 스타일링 (따뜻하고 깔끔한 보라/블루 톤)
+# 커스텀 CSS로 앱 스타일링 (unsafe_allow_html=True 로 수정 완료)
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
@@ -24,6 +23,7 @@ st.markdown("""
         border: none;
         padding: 10px 20px;
         font-weight: bold;
+        width: 100%;
     }
     .stButton>button:hover { background-color: #22223B; color: white; }
     .box {
@@ -32,12 +32,12 @@ st.markdown("""
         border-radius: 12px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         margin-bottom: 20px;
+        color: #333333;
     }
     </style>
-""", unsafe_index=True)
+""", unsafe_allow_html=True)
 
 # 2. Gemini API 클라이언트 초기화 (Streamlit Secrets 활용)
-# Streamlit Cloud의 고급 설정(Secrets)에 GEMINI_API_KEY를 등록해야 합니다.
 if "GEMINI_API_KEY" in st.secrets:
     api_key = st.secrets["GEMINI_API_KEY"]
     client = genai.Client(api_key=api_key)
@@ -54,7 +54,6 @@ st.write("---")
 st.subheader("🔍 지금 나를 방해하는 문제는 무엇인가요?")
 st.caption("가장 공감되는 버튼을 클릭하면 즉시 솔루션을 확인할 수 있습니다.")
 
-# 문제점과 정해진 답 데이터베이스
 problems = {
     "⏰ 스마트폰 중독 / 도파민 중독": {
         "title": "📱 스마트폰 멀리하기 솔루션",
@@ -74,7 +73,6 @@ problems = {
     }
 }
 
-# 4개의 버튼을 2x2 배열로 배치
 col1, col2 = st.columns(2)
 selected_solution = None
 
@@ -90,7 +88,6 @@ with col2:
     if st.button("🥺 불안감과 우울"):
         selected_solution = problems["🥺 불안감 / 타인과의 비교로 인한 우울"]
 
-# 고정 답변 출력
 if selected_solution:
     st.markdown(f"""
     <div class="box">
@@ -117,14 +114,12 @@ if st.button("AI 코칭 받기"):
     else:
         with st.spinner("AI 코치가 당신의 고민을 분석하고 솔루션을 찾는 중..."):
             try:
-                # 안전하고 친절한 자기관리 코치 프롬프트 설정
                 system_instruction = (
                     "당신은 따뜻하고 전문적인 대화형 자기관리 및 동기부여 코치입니다. "
                     "사용자의 고민에 대해 깊이 공감해주고, 행동으로 옮길 수 있는 구체적이고 현실적인 솔루션 2~3가지를 "
                     "친근하고 다정한 말투(해요체)로 번호표(1., 2.)를 붙여 명확하게 제시해주세요."
                 )
                 
-                # gemini-2.5-flash-lite 모델 호출
                 response = client.models.generate_content(
                     model='gemini-2.5-flash-lite',
                     contents=user_input,
@@ -134,7 +129,6 @@ if st.button("AI 코칭 받기"):
                     )
                 )
                 
-                # 결과 출력
                 st.markdown("### 💌 AI 코치의 따뜻한 처방전")
                 st.markdown(f"""
                 <div class="box" style="border-left: 5px solid #4A4E69;">
@@ -147,6 +141,5 @@ if st.button("AI 코칭 받기"):
             except Exception as e:
                 st.error("알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.")
 
-# 6. 하단 푸터 (감성 문구)
 st.write("---")
 st.caption("💡 오늘 조금 부족했더라도 괜찮아요. 당신은 이미 충분히 잘해내고 있습니다. - 마인드내비")
