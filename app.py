@@ -10,7 +10,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 세련된 무드의 커스텀 CSS (빈 박스가 생기지 않도록 구조 개선)
+# 불필요한 테두리 스타일을 제거하고 깔끔하게 다듬은 CSS
 st.markdown("""
     <style>
     .stApp { background: linear-gradient(135deg, #FFF5F7 0%, #F4F7FF 100%); }
@@ -23,14 +23,6 @@ st.markdown("""
         border: 1px solid rgba(74, 78, 105, 0.15);
         box-shadow: 0 4px 15px rgba(0,0,0,0.04);
         margin-bottom: 15px;
-        color: #2B2D42;
-    }
-    .result-card {
-        background: #FFFDFD;
-        border-radius: 15px;
-        padding: 20px;
-        border: 2px dashed #FF758F;
-        margin-top: 15px;
         color: #2B2D42;
     }
     .stButton>button {
@@ -61,7 +53,7 @@ if anxiety_score >= 70:
 elif anxiety_score >= 40:
     st.warning(f"💛 **주의 (불안도 {anxiety_score}%)**: 서운함, 잡념, 혹은 무기력이 시작되고 있네요. 환기가 필요한 시점입니다.")
 else:
-    st.success(f"💚 **안정 (불안도 {anxiety_score}%)**: 일상과 감정의 밸런스가 아주 좋습니다. 이 상태를 유지해보세요!")
+    st.success(f"💚 **안정 (불안도 {anxiety_score}%)**: 일상과 감정의 밸런스가 아주 좋습니다. 이 상태을 유지해보세요!")
 st.markdown("</div>", unsafe_allow_html=True)
 
 # 4. 기능별 대시보드 탭 구성
@@ -107,15 +99,15 @@ with tab2:
         if st.button("🤬 사소한 일에 서운해요"): st.info(love_problems[keys_love[1]])
         if st.button("💔 이별 후 미련이 남아요"): st.info(love_problems[keys_love[3]])
 
-# 탭 3: MBTI 스타일 연애 멘탈 유형 테스트 (렉 방지 및 상태 유지 적용)
+# 탭 3: MBTI 스타일 연애 멘탈 유형 테스트 (빈 테두리 완벽 제거 버젼)
 with tab3:
     st.markdown("### 📊 내 연애 멘탈 & 자존감 MBTI 테스트")
     st.write("4가지 질문에 솔직하게 답하고 나의 '연애 자기관리 유형'을 확인해보세요!")
     st.write("---")
 
-    # 선택 데이터 세션 초기화 (새로고침 시 빈 박스 방지용 핵심 로직)
-    if 'test_result_html' not in st.session_state:
-        st.session_state.test_result_html = None
+    # 세션 상태 변수 초기화
+    if 'result_type' not in st.session_state:
+        st.session_state.result_type = None
 
     q1 = st.radio(
         "1. 상대방이 주말에 약속이 있어 나를 못 만난다고 할 때 나의 반응은?",
@@ -142,43 +134,23 @@ with tab3:
         choices = [q1, q2, q3, q4]
         a_count = sum([1 for c in choices if c.startswith("A")])
         
-        # HTML 텍스트를 세션 상태에 직접 저장하여 껍데기만 남는 현상 방지
-        if a_count == 4:
-            st.session_state.test_result_html = """
-            <div class='result-card'>
-                ### 🧬 당신의 연애 멘탈 진단 결과
-                #### 🚨 유형: [LOVE-A] **감정 올인형 러버**
-                상대방이 삶의 중심이 되어 있어 자존감이 쉽게 흔들리는 타입입니다. 상대방의 연락 한 통에 하루의 기분이 결정되곤 해요. **지금 필요한 자기관리:** 타인에게 집중된 시선을 의도적으로 나 자신에게 돌리는 '중심 잡기' 연습이 시급합니다!
-            </div>
-            """
-        elif a_count == 3 or a_count == 2:
-            st.session_state.test_result_html = """
-            <div class='result-card'>
-                ### 🧬 당신의 연애 멘탈 진단 결과
-                #### 💛 유형: [LOVE-S] **눈치 서운형 러버**
-                독립적으로 행동하고 싶지만 마음 한편으론 끊임없이 불안함과 서운함을 느끼는 타입입니다. 혼자 삭히다가 오해가 깊어질 수 있어요. **지금 필요한 자기관리:** 서운한 감정이 들 때는 메모장에 생각을 먼저 정리한 뒤, 팩트 기반으로 건강하게 소통하는 연습을 해보세요.
-            </div>
-            """
-        elif a_count == 1:
-            st.session_state.test_result_html = """
-            <div class='result-card'>
-                ### 🧬 당신의 연애 멘탈 진단 결과
-                #### 🧱 유형: [LOVE-I] **철벽 고립형 러버**
-                상처받기 싫어서 마음을 깊게 주지 않거나, 지나치게 쿨한 척 벽을 치는 타입일 수 있습니다. 자기관리는 잘 되지만 관계의 깊이가 아쉬울 수 있어요. **지금 필요한 자기관리:** 가끔은 내 약한 모습을 솔직하게 털어놓으며 상대방을 신뢰하는 연습을 해보세요.
-            </div>
-            """
-        else:
-            st.session_state.test_result_html = """
-            <div class='result-card'>
-                ### 🧬 당신의 연애 멘탈 진단 결과
-                #### 💚 유형: [LOVE-G] **멘탈 단단형 갓생러**
-                나 자신을 사랑할 줄 알고 연인과도 건강한 거리를 유지하는 완벽한 밸런스의 소유자입니다! 연애 때문에 일상을 망치지 않는 자존감 끝판왕이시네요. **지금 필요한 자기관리:** 지금처럼 나만의 루틴을 유지하며 예쁜 사랑을 이어가세요.
-            </div>
-            """
+        # 번잡한 HTML 태그를 모두 없애고 결과의 번호만 세션에 깔끔하게 저장
+        st.session_state.result_type = a_count
 
-    # 결과 데이터가 있을 때만 안전하게 렌더링 (빈 테두리 완벽 제거)
-    if st.session_state.test_result_html:
-        st.markdown(st.session_state.test_result_html, unsafe_allow_html=True)
+    # 결과가 있을 때만 Streamlit 내부 기본 제공 컴포넌트로 예쁘게 출력
+    if st.session_state.result_type is not None:
+        res = st.session_state.result_type
+        st.write("---")
+        st.markdown("### 🧬 당신의 연애 멘탈 진단 결과")
+        
+        if res == 4:
+            st.error("🚨 **유형: [LOVE-A] 감정 올인형 러버**\n\n상대방이 삶의 중심이 되어 있어 자존감이 쉽게 흔들리는 타입입니다. 상대방의 연락 한 통에 하루의 기분이 결정되곤 해요. \n\n**지금 필요한 자기관리:** 타인에게 집중된 시선을 의도적으로 나 자신에게 돌리는 '중심 잡기' 연습이 시급합니다!")
+        elif res == 3 or res == 2:
+            st.warning("💛 **유형: [LOVE-S] 눈치 서운형 러버**\n\n독립적으로 행동하고 싶지만 마음 한편으론 끊임없이 불안함과 서운함을 느끼는 타입입니다. 혼자 삭히다가 오해가 깊어질 수 있어요. \n\n**지금 필요한 자기관리:** 서운한 감정이 들 때는 메모장에 생각을 먼저 정리한 뒤, 팩트 기반으로 건강하게 소통하는 연습을 해보세요.")
+        elif res == 1:
+            st.info("🧱 **유형: [LOVE-I] 철벽 고립형 러버**\n\n상처받기 싫어서 마음을 깊게 주지 않거나, 지나치게 쿨한 척 벽을 치는 타입일 수 있습니다. 자기관리는 잘 되지만 관계의 깊이가 아쉬울 수 있어요. \n\n**지금 필요한 자기관리:** 가끔은 내 약한 모습을 솔직하게 털어놓으며 상대방을 신뢰하는 연습을 해보세요.")
+        else:
+            st.success("💚 **유형: [LOVE-G] 멘탈 단단형 갓생러**\n\n나 자신을 사랑할 줄 알고 연인과도 건강한 거리를 유지하는 완벽한 밸런스의 소유자입니다! 연애 때문에 일상을 망치지 않는 자존감 끝판왕이시네요. \n\n**지금 필요한 자기관리:** 지금처럼 나만의 루틴을 유지하며 예쁜 사랑을 이어가세요.")
 
 # 탭 4: 예외 상황 맞춤형 AI 코칭 (gemini-2.5-flash-lite)
 with tab4:
@@ -203,6 +175,7 @@ with tab4:
                         contents=user_query,
                         config=types.GenerateContentConfig(system_instruction=prompt)
                     )
+                    # AI 상담 창도 테두리 제거하고 가독성 좋은 흰색 카드형태로 깔끔히 노출
                     st.markdown(f"<div class='content-card' style='border-left:5px solid #4A4E69; background-color:#FFFDFD;'>{response.text}</div>", unsafe_allow_html=True)
                 except APIError as e:
                     st.error(f"Gemini API 오류가 발생했습니다: {e.message}")
