@@ -3,14 +3,14 @@ from google import genai
 from google.genai import types
 from google.genai.errors import APIError
 
-# 1. 페이지 설정 및 배경 디자인
+# 1. 페이지 설정 및 디자인
 st.set_page_config(
     page_title="마인드내비 - 일상 & 연애 자기관리",
     page_icon="🌱",
     layout="centered"
 )
 
-# 감성적이면서도 깔끔한 무드의 커스텀 CSS
+# 감성적이면서도 가독성 높은 디자인을 위한 커스텀 CSS
 st.markdown("""
     <style>
     .stApp { background: linear-gradient(135deg, #FFF5F7 0%, #F4F7FF 100%); }
@@ -24,6 +24,13 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(0,0,0,0.04);
         margin-bottom: 15px;
         color: #2B2D42;
+    }
+    .result-card {
+        background: #FFFDFD;
+        border-radius: 15px;
+        padding: 20px;
+        border: 2px dashed #FF758F;
+        margin-top: 15px;
     }
     .stButton>button {
         background: linear-gradient(90deg, #4A4E69 0%, #9A8C98 100%);
@@ -56,11 +63,10 @@ else:
     st.success(f"💚 **안정 (불안도 {anxiety_score}%)**: 일상과 감정의 밸런스가 아주 좋습니다. 이 상태를 유지해보세요!")
 st.markdown("</div>", unsafe_allow_html=True)
 
-
 # 4. 기능별 대시보드 탭 구성
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["🔥 일상 해결", "💘 연애 해결", "🌱 자존감 진단", "💬 카톡 속마음", "🤖 AI 상담소"])
+tab1, tab2, tab3, tab4 = st.tabs(["🔥 일상 해결", "💘 연애 해결", "📊 멘탈 성향 테스트", "🤖 AI 상담소"])
 
-# 탭 1: 일상 자기관리 고정 문답 (원래 기능 반영)
+# 탭 1: 일상 자기관리 고정 문답
 with tab1:
     st.markdown("### 🔍 내 일상을 방해하는 문제점 해결")
     st.caption("가장 공감되는 나만의 일상 문제를 선택해 즉시 솔루션을 확인하세요.")
@@ -100,55 +106,67 @@ with tab2:
         if st.button("🤬 사소한 일에 서운해요"): st.info(love_problems[keys_love[1]])
         if st.button("💔 이별 후 미련이 남아요"): st.info(love_problems[keys_love[3]])
 
-# 탭 3: 내 연애 자존감 체크리스트 (자신에 대한 고민)
+# 탭 3: [NEW] MBTI 스타일 연애 멘탈 유형 테스트
 with tab3:
-    st.markdown("### 🌱 내 연애 자존감 및 매력 진단")
-    st.write("대부분의 연애 고민은 '나를 얼마나 소중히 여기는가'에서 출발합니다. 스스로 체크해 보세요.")
-    
-    q1 = st.checkbox("상대방의 기분이나 반응에 내 하루 전체가 롤러코스터를 탄다.")
-    q2 = st.checkbox("서운한 게 있어도 상대가 싫어하거나 떠나갈까 봐 솔직하게 말하지 못한다.")
-    q3 = st.checkbox("나 자신에게 투자하는 시간(취미, 공부)보다 상대를 기다리는 시간이 훨씬 길다.")
-    q4 = st.checkbox("가끔 '내가 매력이 없어서 상대가 이러나?' 하는 자책감이 든다.")
-    
-    score = sum([q1, q2, q3, q4])
-    if score >= 3:
-        st.markdown("<div style='color:#D90429; font-weight:bold;'>⚠️ 경고: 연애 올인 및 자아 상실 단계</div><p>상대방 중심의 연애를 하고 있어 자존감이 많이 낮아진 상태입니다. 오늘부터 연락을 조금 줄이고 오롯이 나만을 위한 저녁 시간을 보내세요.</p>", unsafe_allow_html=True)
-    elif score >= 1:
-        st.markdown("<div style='color:#CC5A01; font-weight:bold;'>💛 주의: 감정 휘둘림 시작 단계</div><p>중심이 살짝 흔들리고 있습니다. 상대방은 내 삶의 전부가 아닌 '일부'라는 점을 명심하고, 내 일상의 루틴을 다시 세워보세요.</p>", unsafe_allow_html=True)
-    else:
-        st.markdown("<div style='color:#2B9348; font-weight:bold;'>💚 안전: 단단한 내면의 독립형 연애</div><p>자존감이 높고 건강한 상태입니다. 상대방과 균형 잡힌 사랑을 하고 계시네요. 지금처럼 나를 아끼며 연애를 즐기세요!</p>", unsafe_allow_html=True)
+    st.markdown("### 📊 내 연애 멘탈 & 자존감 MBTI 테스트")
+    st.write("4가지 질문에 솔직하게 답하고 나의 '연애 자기관리 유형'을 확인해보세요!")
+    st.write("---")
 
-# 탭 4: 카톡 말투 속마음 통역기
-with tab4:
-    st.markdown("### 💬 카톡 말투로 읽는 유머러스 속마음 가이드")
-    st.write("상대의 애매한 카톡 스타일 때문에 전전긍긍하고 있다면? 가볍게 확인해 보세요.")
-    
-    talk_style = st.selectbox(
-        "상대방의 가장 특징적인 카톡 스타일은?",
-        ["스타일을 선택하세요", "갑자기 짧아진 단답형 (ㅇㅇ, 웅, 그래)", "사소한 일상도 다 물어보는 질문형", "읽고 한참 뒤에 오는 굼벵이형", "이모티콘과 리액션이 폭발하는 과즙형"]
+    # 문항 1
+    q1 = st.radio(
+        "1. 상대방이 주말에 약속이 있어 나를 못 만난다고 할 때 나의 반응은?",
+        ["A. '나랑 놀기 싫은가?' 서운해서 하루 종일 신경 쓰인다.", "B. '오히려 좋아!' 밀린 넷플릭스를 보거나 내 취미 생활을 즐긴다."]
     )
-    
-    if talk_style == "갑자기 짧아진 단답형 (ㅇㅇ, 웅, 그래)":
-        st.error("💡 통역: 현재 다른 일로 매우 바쁘거나 심리적 에너지가 고갈된 상태입니다. 이때 '왜 단답해?'라고 따지면 싸움만 납니다. 똑같이 쿨하게 대하고 내 할 일 하러 가세요.")
-    elif talk_style == "사소한 일상도 다 물어보는 질문형":
-        st.success("💡 통역: 대화를 계속 이어가고 싶어 안달이 난 상태, 즉 그린라이트 확률 95%! 상대방도 당신의 반응을 기다리고 있으니 다정하게 응답해 주셔도 좋습니다.")
-    elif talk_style == "읽고 한참 뒤에 오는 굼벵이형":
-        st.warning("💡 통역: 연락에 원래 무디거나, 현재 당신보다 더 재밌는 우선순위(게임, 친구, 일)가 있는 상태입니다. 선톡을 뚝 끊고 상대가 먼저 나를 찾을 때까지 밀당 게이지를 올리세요.")
-    elif talk_style == "이모티콘과 리액션이 폭발하는 과즙형":
-        st.success("💡 통역: 당신에게 아주 잘 보이고 싶어 정성을 들이는 중입니다. 리액션에 대한 칭찬이나 고마움을 살짝 표현해 주면 관계가 더 돈독해집니다.")
+    # 문항 2
+    q2 = st.radio(
+        "2. 연인 혹은 썸남/썸녀가 카톡을 읽고 3시간 동안 답장이 없을 때 나는?",
+        ["A. 핸드폰을 계속 확인하며 카톡방을 들락날락한다.", "B. 바쁜가 보다 생각하고 내 할 일(공부, 업무)에 집중한다."]
+    )
+    # 문항 3
+    q3 = st.radio(
+        "3. 상대방의 사소한 말투나 행동이 평소와 달라 보일 때 나는?",
+        ["A. '나한테 질렸나?' 혼자 최악의 시나리오를 쓰며 불안해한다.", "B. 기분 좋은 일이나 다른 일이 있는지 직접 무덤덤하게 물어본다."]
+    )
+    # 문항 4
+    q4 = st.radio(
+        "4. 서운한 점이 생겼을 때 나의 대처 방식은?",
+        ["A. 상대가 알아주길 바라며 티만 내거나, 혼자 꾹 참다가 나중에 폭발한다.", "B. 감정이 가라앉은 후 차분하게 내 생각과 마음을 말로 전달한다."]
+    )
 
-# 탭 5: 예외 상황 맞춤형 AI 코칭 (gemini-2.5-flash-lite)
-with tab5:
+    if st.button("✨ 내 유형 결과 보기"):
+        # 점수 계산 (A의 개수를 셉니다)
+        choices = [q1, q2, q3, q4]
+        a_count = sum([1 for c in choices if c.startswith("A")])
+        
+        st.markdown("<div class='result-card'>", unsafe_allow_html=True)
+        st.markdown("### 🧬 당신의 연애 멘탈 진단 결과")
+        
+        if a_count == 4:
+            st.markdown("#### 🚨 유형: [LOVE-A] **감정 올인형 러버**")
+            st.write("상대방이 삶의 중심이 되어 있어 자존감이 쉽게 흔들리는 타입입니다. 상대방의 연락 한 통에 하루의 기분이 결정되곤 해요. **지금 필요한 자기관리:** 타인에게 집중된 시선을 의도적으로 나 자신에게 돌리는 '중심 잡기' 연습이 시급합니다!")
+        elif a_count == 3 or a_count == 2:
+            st.markdown("#### 💛 유형: [LOVE-S] **눈치 서운형 러버**")
+            st.write("독립적으로 행동하고 싶지만 마음 한편으론 끊임없이 불안함과 서운함을 느끼는 타입입니다. 혼자 삭히다가 오해가 깊어질 수 있어요. **지금 필요한 자기관리:** 서운한 감정이 들 때는 메모장에 생각을 먼저 정리한 뒤, 팩트 기반으로 건강하게 소통하는 연습을 해보세요.")
+        elif a_count == 1:
+            st.markdown("#### 🧱 유형: [LOVE-I] **철벽 고립형 러버**")
+            st.write("상처받기 싫어서 마음을 깊게 주지 않거나, 지나치게 쿨한 척 벽을 치는 타입일 수 있습니다. 자기관리는 잘 되지만 관계의 깊이가 아쉬울 수 있어요. **지금 필요한 자기관리:** 가끔은 내 약한 모습을 솔직하게 털어놓으며 상대방을 신뢰하는 연습을 해보세요.")
+        else:
+            st.markdown("#### 💚 유형: [LOVE-G] **멘탈 단단형 갓생러**")
+            st.write("나 자신을 사랑할 줄 알고 연인과도 건강한 거리를 유지하는 완벽한 밸런스의 소유자입니다! 연애 때문에 일상을 망치지 않는 자존감 끝판왕이시네요. **지금 필요한 자기관리:** 지금처럼 나만의 루틴을 유지하며 예쁜 사랑을 이어가세요.")
+            
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# 탭 4: 예외 상황 맞춤형 AI 코칭 (gemini-2.5-flash-lite)
+with tab4:
     st.markdown("### 🤖 무엇이든 물어보는 AI 자기관리 코치")
-    st.write("일상의 무기력, 일 관리 슬럼프부터 아무에게도 말 못 할 미묘한 연애 고민까지 디테일하게 적어주세요.")
+    st.write("일상의 무기력, 일 관리 슬럼프부터 테스트 결과에 대한 깊은 고민, 아무에게도 말 못 할 미묘한 연애 상황까지 적어주세요.")
     
-    user_query = st.text_area("나의 구체적인 상황과 고민", placeholder="예시 1: 시험 기간인데 자꾸 폰만 보게 돼요.\n예시 2: 썸남이 며칠째 읽씹 중인데 먼저 연락하면 없어 보일까요?")
+    user_query = st.text_area("나의 구체적인 상황과 고민", placeholder="예시: 방금 테스트에서 [감정 올인형]이 나왔는데, 연락 집착을 고치고 제 일상 루틴을 되찾을 수 있는 실천 꿀팁을 구체적으로 알려주세요!")
     
     if st.button("AI 맞춤 처방전 받기"):
         if user_query.strip():
             with st.spinner("AI 코치가 당신의 삶의 균형과 자존감을 지켜줄 정답을 분석 중..."):
                 try:
-                    # 일상과 연애 자존감을 포괄하는 전문적인 멘토 페르소나
                     prompt = (
                         "당신은 일상 자기관리 및 연애 심리 전문가이자, 사용자의 자존감 수호를 최우선으로 여기는 멘토입니다. "
                         "사용자의 고민(일상 슬럼프 또는 연애 고민 등)을 분석하여 다음 원칙에 맞춰 대답하세요. "
